@@ -50,7 +50,7 @@ class UserController extends Controller
         if($query) {
             return response()->json([
                 'success' => 0, 
-                'message' => 'Account with same Email or Phone number already exists.'
+                'message' => 'Account with same Email already exists.'
             ], 401);
         }
 
