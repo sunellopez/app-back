@@ -8,7 +8,7 @@ use App\Http\Controllers\UserController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
-Route::post('signup', [UserController::class, 'store']);
+Route::post('sign-up', [UserController::class, 'store']);
 Route::post('login', [UserController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function() {

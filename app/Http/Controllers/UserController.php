@@ -38,7 +38,8 @@ class UserController extends Controller
 
         if($validator->fails()) {
             return response()->json([
-                'error' => $validator->errors()
+                'message'=> 'Validation failed', 
+                'errors' => $validator->errors()
             ], 422);
         }
 
@@ -51,7 +52,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => 0, 
                 'message' => 'Account with same Email already exists.'
-            ], 401);
+            ], 409);
         }
 
         $input = $request->all();
@@ -69,7 +70,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show()
     {
         $user = Auth::user();
 
