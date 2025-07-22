@@ -134,18 +134,18 @@ class UserController extends Controller
 
         return response()->json([
             'success' => 1,
-            'token' => $token
+            'token' => $token,
+            'user' => $user
         ], 200);
     }
 
-    // public function logout(Request $request)
-    // {
-    //     $user = Auth::user();
-    //     // Delete existing tokens for the user
-    //     $user->tokens()->delete();
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
 
-    //     return response()->json([
-    //         'success' => 1,
-    //     ], 200);
-    // }
+        return response()->json([
+            'success' => 1,
+            'message' => 'Sesión cerrada correctamente'
+        ]);
+    }
 }
