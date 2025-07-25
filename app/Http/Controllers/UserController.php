@@ -63,7 +63,8 @@ class UserController extends Controller
 
         return response()->json([
             'success' => 1,
-            'token' => $token
+            'token' => $token,
+            'message' => 'Cuenta creada con éxito.'
         ], 200);
     }
 
