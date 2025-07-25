@@ -15,9 +15,9 @@ class ExpenseController extends Controller
 
     }
 
-    public function summary(Request $request)
+    public function summary()
     {
-        $user = $request->user();
+        $user = Auth::user();
         $now = Carbon::now(); 
         $startOfWeek = $now->copy()->startOfWeek(); 
 
@@ -32,6 +32,7 @@ class ExpenseController extends Controller
             'start' => $startOfWeek->toDateString(),
             'end' => $now->toDateString(),
             'count' => $expenses->count(),
+            'user_id' => $user
         ]);
     }
 
