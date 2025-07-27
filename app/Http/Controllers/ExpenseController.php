@@ -22,6 +22,11 @@ class ExpenseController extends Controller
     public function summary()
     {
         $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $now = Carbon::now(); 
         $startOfWeek = $now->copy()->startOfWeek(); 
 
@@ -35,8 +40,7 @@ class ExpenseController extends Controller
             'total' => $total,
             'start' => $startOfWeek->toDateString(),
             'end' => $now->toDateString(),
-            'count' => $expenses->count(),
-            'user_id' => $user
+            'count' => $expenses->count()
         ]);
     }
 
