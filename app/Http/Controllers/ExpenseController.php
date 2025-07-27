@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class ExpenseController extends Controller
 {
-    public function index() 
+    public function index()
     {
+        $user = Auth::user();
 
+        return Expense::where('user_id', $user->id)
+            ->orderBy('id', 'desc')
+            ->paginate(10);
     }
 
     public function summary()
