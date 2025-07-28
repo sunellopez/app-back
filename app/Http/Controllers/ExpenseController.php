@@ -22,28 +22,30 @@ class ExpenseController extends Controller
     public function summary()
     {
         $user = Auth::user();
-        
+
         if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $now = Carbon::now(); 
-        $startOfWeek = $now->copy()->startOfWeek(); 
+        // 🗓️ Rango de la SEMANA PASADA COMPLETA
+        $startOfWeek = Carbon::now()->subWeek()->startOfWeek(); // Lunes pasado
+        $endOfWeek = Carbon::now()->subWeek()->endOfWeek();     // Domingo pasado
 
         $expenses = Expense::where('user_id', $user->id)
-            ->whereBetween('date', [$startOfWeek->toDateString(), $now->toDateString()])
+            ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
 
         $total = $expenses->sum('amount');
 
         return response()->json([
-            'total' => $total,
-            'start' => $startOfWeek->toDateString(),
-            'end' => $now->toDateString(),
-            'count' => $expenses->count()
+            'data' => [
+                'total' => $total,
+                'start' => $startOfWeek->toDateString(),
+                'end' => $endOfWeek->toDateString(),
+                'count' => $expenses->count()
+            ]
         ]);
     }
-
 
     public function store(Request $request)
     {
