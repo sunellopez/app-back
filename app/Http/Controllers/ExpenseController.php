@@ -15,7 +15,7 @@ class ExpenseController extends Controller
         $user = Auth::user();
 
         return Expense::where('user_id', $user->id)
-            ->orderBy('id', 'desc')
+            ->orderBy('date', 'desc')
             ->paginate(10);
     }
 
@@ -28,9 +28,9 @@ class ExpenseController extends Controller
         }
 
         // 🗓️ Rango de la SEMANA PASADA COMPLETA
-        $startOfWeek = Carbon::now()->subWeek()->startOfWeek(); // Lunes pasado
-        $endOfWeek = Carbon::now()->subWeek()->endOfWeek();     // Domingo pasado
-
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek   = Carbon::now()->endOfWeek();
+        
         $expenses = Expense::where('user_id', $user->id)
             ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
