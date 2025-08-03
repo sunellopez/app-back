@@ -27,19 +27,51 @@ class ExpenseController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        // 🗓️ Rango de la SEMANA PASADA COMPLETA
         $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek   = Carbon::now()->endOfWeek();
-        
+        $endOfWeek = Carbon::now()->endOfWeek();
+
         $expenses = Expense::where('user_id', $user->id)
             ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
             ->get();
 
-        $total = $expenses->sum('amount');
+        // 📊 Agrupa por día de la semana
+        $expensesByDay = Expense::where('user_id', $user->id)
+            ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+            ->selectRaw('DAYOFWEEK(date) as day_of_week, SUM(amount) as total')
+            ->groupBy('day_of_week')
+            ->get();
+        
+        // 🗓️ Genera array con Lunes a Domingo
+        $weekDays = [
+            1 => 'Domingo',
+            2 => 'Lunes',
+            3 => 'Martes',
+            4 => 'Miércoles',
+            5 => 'Jueves',
+            6 => 'Viernes',
+            7 => 'Sábado'
+        ];
+
+        $dailyTotals = [
+            'Lunes' => 0,
+            'Martes' => 0,
+            'Miércoles' => 0,
+            'Jueves' => 0,
+            'Viernes' => 0,
+            'Sábado' => 0,
+            'Domingo' => 0,
+        ];
+
+        foreach ($expensesByDay as $day) {
+            $dayName = $weekDays[$day->day_of_week];
+            $dailyTotals[$dayName] = $day->total;
+        }
 
         return response()->json([
             'data' => [
-                'total' => $total,
+                'total' => array_sum($dailyTotals),
+                'daily' => array_values($dailyTotals),
+                'labels' => array_keys($dailyTotals),
                 'start' => $startOfWeek->toDateString(),
                 'end' => $endOfWeek->toDateString(),
                 'count' => $expenses->count()
@@ -68,5 +100,64 @@ class ExpenseController extends Controller
             'message' => 'Gasto creado correctamente.',
             'data' => $expense,
         ], 201);
+    }
+
+    public function getHighestExpenseThisWeek() 
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
+
+        $expense = Expense::where('user_id', $user->id)
+            ->whereBetween('date', [$startOfWeek, $endOfWeek])
+            ->orderByDesc('amount')
+            ->first();
+        
+        return response()->json([
+            'data' => $expense
+        ]);
+    }
+
+    public function getMonthlyExpenses(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // 📅 Obtiene el año o usa el actual
+        $year = $request->input('year', Carbon::now()->year);
+
+        // 🧮 Agrupa por mes y suma
+        $expenses = Expense::where('user_id', $user->id)
+            ->whereYear('date', $year)
+            ->selectRaw('MONTH(date) as month, SUM(amount) as total')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // 🎯 Prepara array con 12 posiciones (1-12)
+        $monthlyTotals = array_fill(1, 12, 0);
+
+        foreach ($expenses as $expense) {
+            $monthlyTotals[$expense->month] = (float) $expense->total;
+        }
+
+        // 📌 Reindexa a 0-11
+        $monthlyTotals = array_values($monthlyTotals);
+
+        return response()->json([
+            'data' => [
+                'year' => $year,
+                'monthlyExpenses' => $monthlyTotals,
+                'months' => ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+            ]
+        ]);
     }
 }

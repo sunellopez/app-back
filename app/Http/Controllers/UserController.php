@@ -74,10 +74,16 @@ class UserController extends Controller
     public function show()
     {
         $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
 
         return response()->json([
-            "name" => $user->name,
-            "email" => $user->email,
+            'data' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]
         ]);
     }
 
@@ -92,9 +98,29 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateProfile(Request $request)
     {
-        //
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+        ]);
+        
+        $updateUser = User::find($user->id);
+        $updateUser->update([
+            'name' => $request->name,
+            'email' => $request->email
+        ]); 
+
+        return response()->json([
+            'message' => 'Perfil actualizado correctamente',
+            'data' => $updateUser,
+        ]);
     }
 
     /**

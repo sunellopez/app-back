@@ -14,6 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Perfil de usuario
     Route::get('profile', [UserController::class, 'show']);
+    Route::put('update-profile', [UserController::class, 'updateProfile']);
     Route::post('logout', [UserController::class, 'logout']);
 
     // Gastos personales
@@ -21,5 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ExpenseController::class, 'index']);        
         Route::post('/', [ExpenseController::class, 'store']);        
         Route::get('/summary', [ExpenseController::class, 'summary']);
+        Route::get('/highest-this-week', [ExpenseController::class, 'getHighestExpenseThisWeek']);
+        Route::get('/monthly', [ExpenseController::class, 'getMonthlyExpenses']);
     });
 });
